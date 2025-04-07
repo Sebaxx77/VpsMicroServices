@@ -31,8 +31,9 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    'microservice' => [
-        'url' => env('ENTRADAS_MICROSERVICE', 'http://localhost:8001'),
+    // Aquí puedes agregar o modificar la configuración de 'api'
+    'api_vps' => [
+        'url' => env('API_VPS_SERVICES'),
     ],
 
 ];
