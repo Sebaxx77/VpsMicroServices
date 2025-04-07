@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Agendamientos\AgendamientoDescargaController;
 use App\Http\Controllers\Agendamientos\FormatoDescarga;
+use App\Http\Controllers\Auth\ApiController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Operaciones\OperacionController;
 use App\Http\Controllers\Seguridad\PermissionController;
@@ -9,20 +10,42 @@ use App\Http\Controllers\Seguridad\RoleController;
 use App\Http\Controllers\Usuarios\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
+
 /*
 |--------------------------------------------------------------------------
-| Web Routes
+| Web Routes (UI)
 |--------------------------------------------------------------------------
 |
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
+| Aquí definimos las rutas web para la interfaz de usuario (UI). Estas rutas
+| mostrarán las vistas y enviarán las peticiones al API del monolito.
 |
 */
 
 Route::get('/', function () {
     return view('welcome');
-})->name('bienvenido'); // Se le asigna un nombre a la ruta raiz de la app
+})->name('bienvenido'); // Se le asigna un nombre a la ruta raiz de la app 
+
+// Rutas para mostrar los formularios de autenticación
+Route::get('/login', [ApiController::class, 'showLoginForm'])->name('login');
+Route::get('/forgot-password', [ApiController::class, 'showForgotPasswordForm'])->name('password.request');
+Route::get('/reset-password/{token}', [ApiController::class, 'showResetPasswordForm'])->name('password.reset');
+
+// Rutas para enviar las peticiones de autenticación al API
+Route::post('/login', [ApiController::class, 'login']);
+Route::post('/logout', [ApiController::class, 'logout'])->middleware('auth'); // Requiere autenticación para cerrar sesión
+Route::post('/forgot-password', [ApiController::class, 'forgotPassword'])->name('password.email');
+Route::post('/reset-password', [ApiController::class, 'resetPassword'])->name('password.update');
+
+// Rutas protegidas que requieren autenticación (el middleware 'auth' asume que tienes una sesión activa en la UI)
+Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', function () {
+        return view('dashboard'); // Asegúrate de tener esta vista
+    })->name('dashboard');
+
+    // Aquí puedes definir otras rutas de tu UI que requieran que el usuario esté logueado
+    // Por ejemplo:
+    // Route::get('/perfil', [UserController::class, 'perfil'])->name('perfil');
+});
 
 Route::prefix('agendamiento/formato-descarga')->group(function () {
     // Muestra el formulario público de formato-descarga

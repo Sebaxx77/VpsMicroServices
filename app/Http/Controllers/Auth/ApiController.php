@@ -24,7 +24,7 @@ class ApiController extends Controller
         ]);
 
         try {
-            $response = Http::post(config('services.api_vps.url') . 'api/auth/login', $credentials);
+            $response = Http::post(config('services.api_vps.url') . '/api/auth/login', $credentials);
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -50,7 +50,7 @@ class ApiController extends Controller
             // Llamar al endpoint de logout de la API (requiere autenticación)
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . session('api_token'), // Obtener el token de la sesión
-            ])->post(config('services.api_vps.url') . 'api/auth/logout');
+            ])->post(config('services.api_vps.url') . '/api/auth/logout');
 
             // Independientemente de la respuesta de la API (siempre intentamos limpiar la UI)
             $request->session()->forget('api_token');
@@ -84,7 +84,7 @@ class ApiController extends Controller
         $request->validate(['email' => 'required|email']);
 
         try {
-            $response = Http::post(config('services.api_vps.url') . 'api/auth/forgot-password', ['email' => $request->email]);
+            $response = Http::post(config('services.api_vps.url') . '/api/auth/forgot-password', ['email' => $request->email]);
 
             if ($response->successful()) {
                 return back()->with('status', $response->json('message') ?? 'Se ha enviado un enlace para restablecer la contraseña a su correo electrónico.');
@@ -110,7 +110,7 @@ class ApiController extends Controller
         ]);
 
         try {
-            $response = Http::post(config('services.api_vps.url') . 'api/auth/reset-password', $request->only('token', 'email', 'password', 'password_confirmation'));
+            $response = Http::post(config('services.api_vps.url') . '/api/auth/reset-password', $request->only('token', 'email', 'password', 'password_confirmation'));
 
             if ($response->successful()) {
                 return redirect('/login')->with('status', $response->json('message') ?? 'Su contraseña ha sido restablecida exitosamente. Por favor, inicie sesión.');
