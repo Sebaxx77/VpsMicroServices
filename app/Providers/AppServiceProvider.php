@@ -2,8 +2,11 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Redirect;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,13 +22,27 @@ class AppServiceProvider extends ServiceProvider
      * Bootstrap any application services.
      */
     public function boot()
-{
-    Validator::replacer('after_or_equal', function ($message, $attribute, $rule, $parameters) {
-        // Si el parámetro es "tomorrow", lo cambiamos por "mañana"
-        if (isset($parameters[0]) && $parameters[0] === 'tomorrow') {
-            $parameters[0] = 'mañana';
-        }
-        return str_replace(':date', $parameters[0], $message);
-    });
-}
+    {
+        View::composer([
+            'partials.sidebar',
+            'dashboard.*',
+            // Agrega aquí todas las demás vistas que necesiten la info del usuario
+        ], function ($view) {
+            $token = Session::get('api_token');
+            $user = [];
+        
+            if ($token) {
+                try {
+                    $responseUser = Http::withToken($token)->get(config('services.api_vps.url') . '/api/auth/me');
+                    if ($responseUser->successful()) {
+                        $user = $responseUser->json();
+                        Session::put('api_user', $user); // Almacenar en sesión
+                    }
+                } catch (\Exception $e) {
+                    // Manejar error
+                }
+            }
+            $view->with('user', $user ?? []);
+        });
+    }
 }
