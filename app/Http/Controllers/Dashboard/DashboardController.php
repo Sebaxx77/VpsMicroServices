@@ -28,8 +28,9 @@ class DashboardController extends Controller
             case 'Administrador':
                 return view('dashboard.administrador', $dashboardData);
             case 'Supervisor Agendamientos':
-                return view('dashboard.supervisor', $dashboardData); // Pasar $dashboardData completo
+                return view('dashboard.supervisor', $dashboardData);
             case 'Autorizador Agendamientos':
+                return view('dashboard.autorizador', $dashboardData);
             default:
                 return redirect('/')->with('error', $dashboardData['message'] ?? 'Acceso Denegado.');
         }

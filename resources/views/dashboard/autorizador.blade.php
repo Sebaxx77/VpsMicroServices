@@ -4,7 +4,7 @@
 
         <!-- Bienvenida -->
         <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
-            <h1 class="text-3xl font-bold text-gray-800">Bienvenido, {{ Auth::user()->name }}</h1>
+            <h1 class="text-3xl font-bold text-gray-800">Bienvenido, {{ $user['name'] }}</h1>
         </div>
 
         <!-- Estadísticas -->
@@ -14,10 +14,10 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-gray-500">Total Solicitudes</p>
-                        <p class="text-3xl font-bold text-gray-800 mt-2">{{ count($solicitudes) }}</p>
+                        <p class="text-3xl font-bold text-gray-800 mt-2">{{ $total_solicitudes ?? 'N/A' }}</p>
                     </div>
                     <div class="bg-blue-100 p-3 rounded-full">
-                        <!-- Icono: Llave (puedes ajustar el SVG si lo prefieres) -->
+                        <!-- Icono: Llave -->
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -26,20 +26,16 @@
                     </div>
                 </div>
             </div>
+
             <!-- Solicitudes Pendientes -->
-            @php
-            $pendientes = collect($solicitudes)->filter(function($solicitud) {
-            return $solicitud['estatus'] === 'pendiente';
-            });
-            @endphp
             <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-purple-500">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-gray-500">Solicitudes Pendientes</p>
-                        <p class="text-3xl font-bold text-gray-800 mt-2">{{ $pendientes->count() }}</p>
+                        <p class="text-3xl font-bold text-gray-800 mt-2">{{ $solicitudes_pendientes ?? 0 }}</p>
                     </div>
                     <div class="bg-purple-100 p-3 rounded-full">
-                        <!-- Icono: Escudo (puedes ajustar el SVG si lo prefieres) -->
+                        <!-- Icono: Escudo -->
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -48,7 +44,6 @@
                     </div>
                 </div>
             </div>
-            <!-- Puedes agregar un tercer bloque si es necesario o dejar el espacio en blanco -->
             <div></div>
         </div>
 
@@ -66,26 +61,18 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
-                        @foreach($solicitudes as $solicitud)
+                        @forelse($ultimas_solicitudes as $solicitud)
                         <tr>
-                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-800">{{ $solicitud['op'] ?? '-' }}
-                            </td>
-                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-800">{{ $solicitud['proveedor'] ??
-                                '-' }}</td>
-                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-800">{{ $solicitud['bodega'] ?? '-'
-                                }}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-800">{{ $solicitud['op'] ?? '-' }}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-800">{{ $solicitud['proveedor'] ?? '-' }}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-800">{{ $solicitud['bodega'] ?? '-' }}</td>
                             <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-800">
-                                {{ \Carbon\Carbon::parse($solicitud['fecha_entrega'])->format('d/m/Y') ?? '-' }}
+                                {{ $solicitud['fecha_entrega'] ?? '-' }}
                             </td>
                         </tr>
-                        @endforeach
-                        @if(empty($solicitudes))
-                        <tr>
-                            <td colspan="4" class="px-4 py-2 text-center text-sm text-gray-600">
-                                No se encontraron solicitudes.
-                            </td>
-                        </tr>
-                        @endif
+                        @empty
+                        <tr><td class="px-4 py-2 text-center" colspan="3">No se encontraron solicitudes.</td></tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -97,20 +84,17 @@
             <div class="bg-white p-6 rounded-xl shadow-sm">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Gestionar Solicitudes</h3>
                 <div class="space-y-3">
-                    <a href="{{ route('solicitudes.gestion') }}"
-                        class="flex items-center p-3 bg-gray-50 hover:bg-orange-50 rounded-lg transition-colors">
+                    <a href="{{ route('solicitudes.gestion') }}" class="flex items-center p-3 bg-gray-50 hover:bg-orange-50 rounded-lg transition-colors">
                         <!-- Icono de lista -->
                         <span class="text-orange-600 mr-3">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 6h16M4 12h16M4 18h16" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                             </svg>
                         </span>
                         <span class="text-gray-700 font-medium">Listar Solicitudes</span>
                     </a>
-                    <a href="{{ route('solicitudes.pendientes') }}"
-                        class="flex items-center p-3 bg-gray-50 hover:bg-orange-50 rounded-lg transition-colors">
+                    <a href="{{ route('solicitudes.pendientes') }}" class="flex items-center p-3 bg-gray-50 hover:bg-orange-50 rounded-lg transition-colors">
                         <!-- Icono de reloj -->
                         <span class="text-orange-600 mr-3">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
