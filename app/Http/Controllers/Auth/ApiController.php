@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Password; // Para las operaciones de restablecimiento de contraseña
+use Illuminate\Support\Facades\Password;
 
 class ApiController extends Controller
 {
@@ -49,35 +49,39 @@ class ApiController extends Controller
         }
     }
 
-    public function logout(Request $request)
+    public function logout()
     {
+        // Obtenemos el token de la sesión
+        $token = session('api_token');
+    
+        // Si no hay token, ya está desconectado, redirigimos al login
+        if (!$token) {
+            return redirect()->route('login')->with('message', 'Ya estás desconectado.');
+        }
+    
+        // Enviar la solicitud para revocar el token en el backend
         try {
-            // Llamar al endpoint de logout de la API (requiere autenticación)
+            // Realizamos la solicitud POST al backend para cerrar sesión
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . session('api_token'), // Obtener el token de la sesión
+                'Authorization' => 'Bearer ' . $token
             ])->post(config('services.api_vps.url') . '/api/auth/logout');
-
-            // Independientemente de la respuesta de la API (siempre intentamos limpiar la UI)
-            $request->session()->forget('api_token');
-            // Limpiar cualquier otra información de sesión relacionada con la API.
-            // $request->session()->forget('user_data_from_api');
-
-            return redirect('/login')->with('status', 'Sesión cerrada correctamente.');
-
-        } catch (\Illuminate\Http\Client\ConnectionException $e) {
-            // No se pudo conectar con la API para el logout.
-            // Aún así, limpiamos el estado local de la UI.
-            $request->session()->forget('api_token');
-            // $request->session()->forget('user_data_from_api');
-
-            return redirect('/login')->with('error', 'No se pudo conectar con la API para cerrar sesión. La sesión local ha sido cerrada.');
-        } finally {
-            // Adicionalmente, puedes limpiar cualquier otra cosa relacionada con la sesión de la UI aquí.
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+    
+            // Si la respuesta es exitosa, eliminamos el token de la sesión
+            if ($response->successful()) {
+                session()->forget('api_token');  // Eliminar el token de la sesión
+                session()->forget('user');       // Opcional: también puedes eliminar los datos del usuario si ya no los necesitas
+    
+                // Redirigir al login después de hacer logout
+                return redirect()->route('login')->with('message', 'Sesión cerrada exitosamente.');
+            } else {
+                return redirect()->route('login')->withErrors(['auth' => 'Error al cerrar sesión.']);
+            }
+        } catch (\Exception $e) {
+            // En caso de error al conectar con la API
+            return redirect()->route('login')->withErrors(['auth' => 'Error al conectar con la API.']);
         }
     }
+    
 
     public function showForgotPasswordForm()
     {

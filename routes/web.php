@@ -32,24 +32,20 @@ Route::get('/reset-password/{token}', [ApiController::class, 'showResetPasswordF
 
 // Rutas para enviar las peticiones de autenticación al API
 Route::post('/login', [ApiController::class, 'login']);
-Route::post('/logout', [ApiController::class, 'logout'])->middleware('auth')->name('logout'); // Requiere autenticación para cerrar sesión
 Route::post('/forgot-password', [ApiController::class, 'forgotPassword'])->name('password.email');
 Route::post('/reset-password', [ApiController::class, 'resetPassword'])->name('password.update');
+Route::post('/logout', [ApiController::class, 'logout'])->name('logout');
 
-
-Route::middleware(['api.auth'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    // Aquí puedes definir otras rutas que requieran autenticación por API
-    // Route::get('/perfil', [ProfileController::class, 'index'])->name('perfil');
-});
-
+// Rutas para mostrar los formularios Publicos
 Route::prefix('agendamiento/formato-descarga')->group(function () {
     // Muestra el formulario público de formato-descarga
     Route::get('/', [FormatoDescarga::class, 'index'])->name('agendamiento.formato-descarga.index');
-
     // Procesa el envío del formulario de formato-descarga
     Route::post('/', [FormatoDescarga::class, 'enviar'])->name('agendamiento.formato-descarga.enviar');
-}); //Rutas para el formato de agendamiento de descarga, tanto para mostrar el formato como para enviarlo a la API del Microservicio.
+});
+
+// Rutas para mostrar el dashboard
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
  // Rutas para Permisos
 Route::middleware(['permission:Administrar Permisos'])->prefix('seguridad/permisos')->name('seguridad.permisos.')->group(function () {
