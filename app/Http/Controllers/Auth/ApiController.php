@@ -30,17 +30,22 @@ class ApiController extends Controller
                 $data = $response->json();
                 $token = $data['access_token'] ?? null;
 
-                if ($token) {
-                    return redirect()->intended(route('dashboard'))->with('api_token', $token);
+                if ($token && isset($data['user'])) {
+                    session([
+                        'user' => $data['user'],
+                        'api_token' => $token,
+                    ]);
+
+                    return redirect()->route('dashboard');
                 } else {
-                    return back()->withErrors(['email' => 'La API no devolvió un token de acceso.']);
+                    return back()->withErrors(['email' => 'La API no devolvió un token de acceso o datos de usuario.']);
                 }
             } else {
                 $errorMessage = $response->json('message') ?? 'Error al intentar iniciar sesión en la API.';
                 return back()->withErrors(['email' => $errorMessage])->withInput();
             }
-        } catch (\Illuminate\Http\Client\ConnectionException $e) {
-            return back()->withErrors(['email' => 'No se pudo conectar con la API. Por favor, inténtalo de nuevo más tarde.'])->withInput();
+        } catch (\Exception $e) {
+            return back()->withErrors(['email' => 'No se pudo conectar con la API.'])->withInput();
         }
     }
 

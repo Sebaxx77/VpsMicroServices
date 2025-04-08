@@ -8,6 +8,7 @@ use App\Http\Controllers\Operaciones\OperacionController;
 use App\Http\Controllers\Seguridad\PermissionController;
 use App\Http\Controllers\Seguridad\RoleController;
 use App\Http\Controllers\Usuarios\UsuarioController;
+use App\Http\Middleware\CheckApiAuth;
 use Illuminate\Support\Facades\Route;
 
 
@@ -36,16 +37,16 @@ Route::post('/logout', [ApiController::class, 'logout'])->middleware('auth'); //
 Route::post('/forgot-password', [ApiController::class, 'forgotPassword'])->name('password.email');
 Route::post('/reset-password', [ApiController::class, 'resetPassword'])->name('password.update');
 
-// Rutas protegidas que requieren autenticación (el middleware 'auth' asume que tienes una sesión activa en la UI)
-Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard'); // Asegúrate de tener esta vista
-    })->name('dashboard');
+
+Route::middleware(['api.auth'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // Aquí puedes definir otras rutas que requieran autenticación por API
+    // Route::get('/perfil', [ProfileController::class, 'index'])->name('perfil');
+});
 
     // Aquí puedes definir otras rutas de tu UI que requieran que el usuario esté logueado
     // Por ejemplo:
     // Route::get('/perfil', [UserController::class, 'perfil'])->name('perfil');
-});
 
 Route::prefix('agendamiento/formato-descarga')->group(function () {
     // Muestra el formulario público de formato-descarga
@@ -54,15 +55,6 @@ Route::prefix('agendamiento/formato-descarga')->group(function () {
     // Procesa el envío del formulario de formato-descarga
     Route::post('/', [FormatoDescarga::class, 'enviar'])->name('agendamiento.formato-descarga.enviar');
 }); //Rutas para el formato de agendamiento de descarga, tanto para mostrar el formato como para enviarlo a la API del Microservicio.
-
-Route::middleware([
-    'auth:sanctum',
-    config('jetstream.auth_session'),
-    'verified',
-    'role'
-])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-});
 
  // Rutas para Permisos
 Route::middleware(['permission:Administrar Permisos'])->prefix('seguridad/permisos')->name('seguridad.permisos.')->group(function () {

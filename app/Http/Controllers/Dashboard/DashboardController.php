@@ -8,35 +8,30 @@ use Illuminate\Support\Facades\Http;
 
 class DashboardController extends Controller
 {
-    /**
-     * Muestra el dashboard correspondiente según el rol del usuario.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Contracts\View\View|\Illuminate\Http\RedirectResponse
-     */
-    public function index(Request $request)
+    public function index()
     {
-        $user = $request->user();
+        $token = session('api_token');
 
-        if ($user->hasRole('Administrador')) {
-            return view('dashboard.administrador');
-        } elseif ($user->hasRole('Autorizador')) {
-            // Definir la URL del microservicio
-            $apiUrl = config('services.microservice.url') . '/api/agendamientos/formato-descarga/todas';
+        if (!$token) {
+            return redirect()->route('login')->withErrors(['email' => 'Sesión inválida.']);
+        }
 
-            // Realizar la solicitud GET al microservicio
-            $response = Http::get($apiUrl);
+        $response = Http::withToken($token)->get(config('services.api_vps.url') . '/api/dashboard');
 
-            if ($response->successful()) {
-                // Extraer el array de solicitudes de la clave "agendamientos"
-                $solicitudes = $response->json()['agendamientos'] ?? [];
-            } else {
-                $solicitudes = [];
-            }
+        if (!$response->successful()) {
+            return redirect()->route('login')->withErrors(['email' => 'No se pudo obtener la información del dashboard.']);
+        }
 
-            return view('dashboard.autorizador', compact('solicitudes'));
-        } else {
-            return redirect('/')->with('error', 'Acceso Denegado.');
+        $dashboardData = $response->json();
+
+        switch ($dashboardData['rol']) {
+            case 'Administrador':
+                return view('dashboard.administrador', $dashboardData);
+            case 'Supervisor Agendamientos':
+                return view('dashboard.supervisor', $dashboardData); // Pasar $dashboardData completo
+            case 'Autorizador Agendamientos':
+            default:
+                return redirect('/')->with('error', $dashboardData['message'] ?? 'Acceso Denegado.');
         }
     }
 }
