@@ -98,9 +98,15 @@
                     required>
             </div>
 
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                Guardar
-            </button>
+            <!-- Botones de acción -->
+            <div class="flex items-center justify-between md:justify-center md:space-x-4">
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                    Guardar
+                </button>
+                <a href="{{ route('usuarios.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                    Cancelar
+                </a>
+            </div>
         </form>
     </div>
 </div>

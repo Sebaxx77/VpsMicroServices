@@ -51,10 +51,7 @@
                     required>
                     <option value="">Seleccione un rol</option>
                     @foreach($roles as $role)
-                    <option value="{{ $role->name }}" {{ old('role', $usuario->getRoleNames()->first()) == $role->name ?
-                        'selected' : '' }}>
-                        {{ $role->name }}
-                    </option>
+                    <option value="{{ $role->name }}" {{ old('role', $usuario->role_name) == $role->name ? 'selected' : '' }}>
                     @endforeach
                 </select>
                 @error('role')
