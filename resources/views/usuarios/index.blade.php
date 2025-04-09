@@ -59,12 +59,13 @@
                             </td>
                             <td class="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
                                 <a href="{{ route('usuarios.edit', $usuario->id) }}" class="text-blue-500 hover:text-blue-600 mr-3">Editar</a>
-                                <!-- Botón Eliminar con JavaScript -->
-                                <button type="button"
-                                onclick="eliminarUsuario({{ $usuario->id }})"
-                                class="text-red-500 hover:text-red-600">
-                                Eliminar
-                                </button>
+                                <form action="{{ route('usuarios.destroy', $usuario->id) }}" method="POST" style="display: inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-red-500 hover:text-red-600" onclick="return confirm('¿Estás seguro de que deseas eliminar este usuario?')">
+                                        Eliminar
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                     @endforeach

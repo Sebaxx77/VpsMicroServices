@@ -51,7 +51,7 @@
                     required>
                     <option value="">Seleccione un rol</option>
                     @foreach($roles as $role)
-                    <option value="{{ $role->name }}" {{ old('role', $usuario->role_name) == $role->name ? 'selected' : '' }}>
+                    <option value="{{ $role->id }}">{{ $role->name }}</option>
                     @endforeach
                 </select>
                 @error('role')
@@ -69,10 +69,7 @@
                     required>
                     <option value="">Seleccione una operación</option>
                     @foreach($operaciones as $operacion)
-                    <option value="{{ $operacion->id }}" {{ old('operacion_id', $usuario->operacion_id) ==
-                        $operacion->id ? 'selected' : '' }}>
-                        {{ $operacion->nombre }}
-                    </option>
+                    <option value="{{ $operacion->id }}">{{ $operacion->nombre }}</option>
                     @endforeach
                 </select>
                 @error('operacion_id')
@@ -103,13 +100,12 @@
                     class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
             </div>
 
-            <div class="flex items-center justify-between">
-                <button type="submit"
-                    class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+            <!-- Botones de acción -->
+            <div class="flex items-center justify-between md:justify-center md:space-x-4">
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
                     Actualizar
                 </button>
-                <a href="{{ route('usuarios.index') }}"
-                    class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
+                <a href="{{ route('usuarios.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
                     Cancelar
                 </a>
             </div>

@@ -161,28 +161,28 @@ class UsuarioController extends Controller
     public function edit($id)
     {
         $token = $this->apiToken();
+        $apiUrl = $this->apiUrl() . '/' . $id; // Concatenamos el / y el $id a la URL base
 
-        // Obtener datos del usuario mediante el endpoint show
-        $responseUser = Http::withToken($token)->get($this->apiUrl("/{$id}"));
-        // Obtener metadatos: roles, permisos y operaciones
-        $responseMeta = Http::withToken($token)->get($this->apiUrl());
-        
-        if ($responseUser->successful() && $responseMeta->successful()) {
-            $usuarioRaw = $responseUser->json()['usuario'] ?? null;
-            if (!$usuarioRaw) {
-                return redirect()->route('usuarios.index')->withErrors('Usuario no encontrado.');
+    try {
+        // Obtener los datos del usuario específico, roles y operaciones desde la API
+        $userResponse = Http::withToken($token)->get($apiUrl);
+
+            if ($userResponse->successful()) {
+                $data = $userResponse->json();
+                $usuario = $this->mapToCollection([$data['usuario']])->first(); // Convertimos el array del usuario a una Collection y obtenemos el primer (y único) elemento
+                $roles = $this->mapToCollection($data['roles'] ?? []);
+                $operaciones = $this->mapToCollection($data['operaciones'] ?? []);
+
+                return view('usuarios.edit', compact('usuario', 'roles', 'operaciones'));
+            } else {
+                // Manejar el error si no se encuentra el usuario
+                return redirect()->route('usuarios.index')->with('error', 'No se encontraron los datos del usuario para editar.');
             }
-            $usuario = $this->arrayToObjectRecursive($usuarioRaw);
-            
-            $meta        = $responseMeta->json();
-            $roles       = isset($meta['roles']) ? $this->mapToCollection($meta['roles']) : collect();
-            $permissions = isset($meta['permissions']) ? $this->mapToCollection($meta['permissions']) : collect();
-            $operaciones = isset($meta['operaciones']) ? $this->mapToCollection($meta['operaciones']) : collect();
-        } else {
-            return redirect()->route('usuarios.index')->withErrors('Error al obtener datos.');
-        }
 
-        return view('usuarios.edit', compact('usuario', 'roles', 'permissions', 'operaciones'));
+        } catch (\Exception $e) {
+            // Manejar errores de conexión u otros errores
+            return redirect()->route('usuarios.index')->with('error', 'Ocurrió un error al cargar la página de edición.');
+        }
     }
 
     /**
