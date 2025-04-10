@@ -3,8 +3,10 @@
 use App\Http\Controllers\Agendamientos\AgendamientoDescargaController;
 use App\Http\Controllers\Agendamientos\FormatoDescarga;
 use App\Http\Controllers\Auth\ApiController;
+use App\Http\Controllers\CorreosNotificables\CorreosNotificables;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Operaciones\OperacionController;
+use App\Http\Controllers\ParquesIndustriales\ParqueIndustrialController;
 use App\Http\Controllers\Seguridad\PermissionController;
 use App\Http\Controllers\Seguridad\RoleController;
 use App\Http\Controllers\Usuarios\UsuarioController;
@@ -73,6 +75,24 @@ Route::prefix('usuarios')->name('usuarios.')->group(function () {
     Route::get('/{id}/editar', [UsuarioController::class, 'edit'])->name('edit');
     Route::put('/{id}', [UsuarioController::class, 'update'])->name('update');
     Route::delete('/{id}', [UsuarioController::class, 'destroy'])->name('destroy');
+});
+//Rutas para Parques Industriales
+Route::prefix('parques-industriales')->name('parques-industriales.')->group(function () {
+    Route::get('/', [ParqueIndustrialController::class, 'index'])->name('index');
+    Route::get('/crear', [ParqueIndustrialController::class, 'create'])->name('create');
+    Route::post('/', [ParqueIndustrialController::class, 'store'])->name('store');
+    Route::get('/{id}/editar', [ParqueIndustrialController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [ParqueIndustrialController::class, 'update'])->name('update');
+    Route::delete('/{id}', [ParqueIndustrialController::class, 'destroy'])->name('destroy');
+});
+//Rutas para Correos Notificables
+Route::prefix('correos-notificables')->name('correos-notificables.')->group(function () {
+    Route::get('/', [CorreosNotificables::class, 'index'])->name('index');
+    Route::get('/crear', [CorreosNotificables::class, 'create'])->name('create');
+    Route::post('/', [CorreosNotificables::class, 'store'])->name('store');
+    Route::get('/{id}/editar', [CorreosNotificables::class, 'edit'])->name('edit');
+    Route::put('/{id}', [CorreosNotificables::class, 'update'])->name('update');
+    Route::delete('/{id}', [CorreosNotificables::class, 'destroy'])->name('destroy');
 });
 //Rutas para operaciones
 Route::prefix('operaciones')->name('operaciones.')->group(function () {

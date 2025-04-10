@@ -42,13 +42,19 @@
             @if(isset($user['role']) && $user['role'] === 'Administrador')
                 <h2 class="mb-2">Opciones Administrador</h2>
                 <li>
-                    <a href="{{ route('usuarios.index') }}" class="block p-2 hover:bg-gray-700">Gestión de Usuarios</a>
+                    <a href="{{ route('usuarios.index') }}" class="block p-2 hover:bg-gray-700">Usuarios</a>
+                </li>
+                <li>
+                    <a href="{{ route('parques-industriales.index') }}" class="block p-2 hover:bg-gray-700">Parques Industriales</a>
+                </li>
+                <li>
+                    <a href="{{ route('correos-notificables.index') }}" class="block p-2 hover:bg-gray-700">Correos Notificables</a>
                 </li>
                 <li>
                     <a href="{{ route('operaciones.index') }}" class="block p-2 hover:bg-gray-700">Operaciones</a>
                 </li>
                 <li>
-                    <a href="{{ route('seguridad.roles.index') }}" class="block p-2 hover:bg-gray-700">Gestión de Roles</a>
+                    <a href="{{ route('seguridad.roles.index') }}" class="block p-2 hover:bg-gray-700">Roles</a>
                 </li>
                 <li>
                     <a href="{{ route('seguridad.permisos.index') }}" class="block p-2 hover:bg-gray-700">Permisos</a>

@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Http\Controllers\ParquesIndustriales;
+namespace App\Http\Controllers\CorreosNotificables;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
-class ParqueIndustrialController extends Controller
+class CorreosNotificables extends Controller
 {
-    protected function apiUrl($endpoint = '/api/parques-industriales')
+    protected function apiUrl($endpoint = '/api/correos-notificables')
     {
         return config('services.api_vps.url') . $endpoint;
     }
@@ -24,7 +24,7 @@ class ParqueIndustrialController extends Controller
     {
         $apiUrl = $this->apiUrl(); // o la ruta que estés usando
         $apiToken = $this->apiToken();
-        return view('parquesindustriales.index', compact('apiUrl', 'apiToken'));
+        return view('correosnotificables.index', compact('apiUrl', 'apiToken'));
     }
     
 }
