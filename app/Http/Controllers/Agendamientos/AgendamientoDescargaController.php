@@ -8,22 +8,23 @@ use Illuminate\Support\Facades\Http;
 
 class AgendamientoDescargaController extends Controller
 {
+    protected function apiUrl($endpoint = '/api/agendamientos/formato-descarga/otros')
+    {
+        return config('services.api_vps.url') . $endpoint;
+    }
+
     /**
-     * Muestra la lista de todas las solicitudes obtenidas desde el microservicio.
+     * Obtiene el token API almacenado en sesión.
      */
+    protected function apiToken()
+    {
+        return session('api_token');
+    }
     public function index()
     {
-        $apiUrl = config('services.microservice.url') . '/api/agendamientos/formato-descarga/otros';
-        $response = Http::get($apiUrl);
-
-        if ($response->successful()) {
-            // Extraemos el arreglo de solicitudes de la clave "agendamientos"
-            $solicitudes = $response->json()['agendamientos'] ?? [];
-        } else {
-            $solicitudes = [];
-        }
-        
-        return view('solicitudes.formato-descarga.index', compact('solicitudes'));
+        $apiUrl = $this->apiUrl(); // o la ruta que estés usando
+        $apiToken = $this->apiToken();
+        return view('solicitudes.formato-descarga.index', compact('apiUrl', 'apiToken'));
     }
 
     /**

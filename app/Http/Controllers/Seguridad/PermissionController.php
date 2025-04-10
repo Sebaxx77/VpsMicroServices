@@ -20,41 +20,11 @@ class PermissionController extends Controller
     {
         return session('api_token');
     }
-
-    /**
-     * Mapea un array de items a una colección de objetos (recursivo).
-     */
-    protected function arrayToObjectRecursive($data)
-    {
-        if (is_array($data)) {
-            return (object) array_map([$this, 'arrayToObjectRecursive'], $data);
-        }
-        return $data;
-    }
-    /**
-     * Mapea un array de items a una colección de objetos.
-     */
-    protected function mapToCollection($items)
-    {
-        return collect($items)->map(function ($item) {
-            return $this->arrayToObjectRecursive($item);
-        });
-    }
-
     public function index()
     {
-        $token = $this->apiToken();
-        try {
-            $response = Http::withToken($token)->get($this->apiUrl());
-            if ($response->successful()) {
-                $permissions = $this->mapToCollection($response->json());
-                return view('seguridad.permisos.index', compact('permissions'));
-            } else {
-                return redirect()->route('seguridad.permisos.index')->with('error', 'Error al obtener los permisos desde la API.');
-            }
-        } catch (\Exception $e) {
-            return redirect()->route('seguridad.permisos.index')->with('error', 'Error de conexión con la API.');
-        }
+        $apiUrl = $this->apiUrl(); // o la ruta que estés usando
+        $apiToken = $this->apiToken();
+        return view('seguridad.permisos.index', compact('apiUrl', 'apiToken'));
     }
 
     public function create()

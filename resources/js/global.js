@@ -149,7 +149,7 @@ document.addEventListener('alpine:init', () => {
     }));
 });
 // Función para procesar Datatables
-window.initDataTable = function({ selector, apiUrl, apiToken = null, columns }) {
+window.initDataTable = function({ selector, apiUrl, apiToken = null, columns}) {
     console.log('initDataTable ejecutado');
     console.log('API URL:', apiUrl);
     console.log('API Token:', apiToken);
@@ -170,7 +170,9 @@ window.initDataTable = function({ selector, apiUrl, apiToken = null, columns }) 
         },
         columns: columns,
         language: {
-            url: "https://cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json"
+            url: "https://cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json",
+            emptyTable: "No hay registros disponibles",
+            zeroRecords: "No se encontraron coincidencias",
         }
     });
 }

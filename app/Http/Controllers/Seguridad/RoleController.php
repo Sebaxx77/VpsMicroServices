@@ -43,18 +43,9 @@ class RoleController extends Controller
 
     public function index()
     {
-        $token = $this->apiToken();
-        try {
-            $response = Http::withToken($token)->get($this->apiUrl());
-            if ($response->successful()) {
-                $roles = $this->mapToCollection($response->json());
-                return view('seguridad.roles.index', compact('roles'));
-            } else {
-                return redirect()->route('seguridad.roles.index')->with('error', 'Error al obtener los roles desde la API.');
-            }
-        } catch (\Exception $e) {
-            return redirect()->route('seguridad.roles.index')->with('error', 'Error de conexión con la API.');
-        }
+        $apiUrl = $this->apiUrl(); // o la ruta que estés usando
+        $apiToken = $this->apiToken();
+        return view('seguridad.roles.index', compact('apiUrl', 'apiToken'));
     }
 
     public function create()
