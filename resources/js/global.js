@@ -148,3 +148,29 @@ document.addEventListener('alpine:init', () => {
         }
     }));
 });
+// Función para procesar Datatables
+window.initDataTable = function({ selector, apiUrl, apiToken = null, columns }) {
+    console.log('initDataTable ejecutado');
+    console.log('API URL:', apiUrl);
+    console.log('API Token:', apiToken);
+    
+    const tabla = document.querySelector(selector);
+    if (!tabla) {
+        console.warn('Tabla no encontrada:', selector);
+        return;
+    }
+
+    $(tabla).DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: apiUrl,
+            headers: apiToken ? { Authorization: 'Bearer ' + apiToken } : {},
+            dataSrc: 'data',
+        },
+        columns: columns,
+        language: {
+            url: "https://cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json"
+        }
+    });
+}

@@ -4,77 +4,131 @@ namespace App\Http\Controllers\Seguridad;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Http;
 
 class RoleController extends Controller
 {
+    protected function apiUrl($endpoint = '/api/roles')
+    {
+        return config('services.api_vps.url') . $endpoint;
+    }
+
+    /**
+     * Obtiene el token API almacenado en sesión.
+     */
+    protected function apiToken()
+    {
+        return session('api_token');
+    }
+
+    /**
+     * Mapea un array de items a una colección de objetos (recursivo).
+     */
+    protected function arrayToObjectRecursive($data)
+    {
+        if (is_array($data)) {
+            return (object) array_map([$this, 'arrayToObjectRecursive'], $data);
+        }
+        return $data;
+    }
+    /**
+     * Mapea un array de items a una colección de objetos.
+     */
+    protected function mapToCollection($items)
+    {
+        return collect($items)->map(function ($item) {
+            return $this->arrayToObjectRecursive($item);
+        });
+    }
+
     public function index()
     {
-        //Función para mostrar la lista de Roles
-        $roles = Role::all();
-        return view('seguridad.roles.index', compact('roles'));
+        $token = $this->apiToken();
+        try {
+            $response = Http::withToken($token)->get($this->apiUrl());
+            if ($response->successful()) {
+                $roles = $this->mapToCollection($response->json());
+                return view('seguridad.roles.index', compact('roles'));
+            } else {
+                return redirect()->route('seguridad.roles.index')->with('error', 'Error al obtener los roles desde la API.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('seguridad.roles.index')->with('error', 'Error de conexión con la API.');
+        }
     }
 
     public function create()
     {
-        //Función para mostrar el formulario de crear un nuevo Rol
-        $permissions = Permission::all();
-        //Para asignar un permiso al Rol, obtenemos todos los permisos existentes
-        return view('seguridad.roles.create', compact('permissions'));
+        return view('seguridad.roles.create');
     }
 
     public function store(Request $request)
     {
-        //Función para almacenar un nuevo Rol
-        $request->validate([
-            "name" => 'required|unique:roles,name'
-        ]);
-
-        $role = Role::create(['name' => $request->name]);
-
-        //Si se han seleccionado permisos, se asginaran
-        if ($request->has('permissions')) {
-            $role->syncPermissions($request->permissions);
+        $token = $this->apiToken();
+        try {
+            $response = Http::withToken($token)->post($this->apiUrl(), $request->all());
+            if ($response->successful()) {
+                return redirect()->route('seguridad.roles.index')
+                    ->with('success', 'Rol creado correctamente.');
+            } else {
+                $errors = $response->json()['errors'] ?? ['Error al crear el Rol.'];
+                return redirect()->back()->withErrors($errors)->withInput();
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('seguridad.roles.index')->with('error', 'Error de conexión con la API.');
         }
-        //Si se creo el Rol dirigeremos al Usuario a nuestra vista con la lista de Roles junto con el mensaje de exito o 'success'
-        return redirect()->route('seguridad.roles.index')->with('success', 'Rol creado correctamente.');
     }
 
     public function edit($id)
     {
-        //Función para mostrar el formulario de editar un Rol
-        $role = Role::findOrFail($id);
-        $permissions = Permission::all();
-        return view('seguridad.roles.edit', compact('role', 'permissions'));
+        $token = $this->apiToken();
+        $apiUrl = $this->apiUrl() . '/' . $id;
+        
+        try {
+            $response = Http::withToken($token)->get($apiUrl);
+            if ($response->successful()) {
+                $rol = $this->arrayToObjectRecursive($response->json());
+                return view('seguridad.roles.edit', compact('rol'));
+            } else {
+                return redirect()->route('seguridad.roles.index')->with('error', 'Error al obtener el rol desde la API.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('seguridad.roles.index')->with('error', 'Error de conexión con la API.');
+        }
     }
 
     public function update(Request $request, $id)
     {
-        //Función para actualizar el Rol y sus permisos
-        $role = Role::findOrFail($id);
-        $request->validate([
-            'name' => 'required|unique:roles,name,' . $role->id
-        ]);
+        $token = $this->apiToken();
+        $apiUrl = $this->apiUrl() . '/' . $id;
 
-        $role->name = $request->name;
-        $role->save();
-
-        if ($request->has('permissions')) {
-            $role->syncPermissions($request->permissions);
-        } else {
-            $role->syncPermissions([]);
+        try {
+            $response = Http::withToken($token)->put($apiUrl, $request->all());
+            if ($response->successful()) {
+                return redirect()->route('seguridad.roles.index')->with('success', 'Rol actualizado correctamente.');
+            } else {
+                $errors = $response->json()['errors'] ?? ['Error al actualizar el Rol.'];
+                return redirect()->back()->withErrors($errors)->withInput();
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('seguridad.roles.index')->with('error', 'Error de conexión con la API.');
         }
-
-        return redirect()->route('seguridad.roles.index')->with('success', 'Rol actualizado  correctamente.');
     }
 
     public function destroy($id)
     {
-        //Función para eliminar un Rol
-        $role = Role::findOrFail($id);
-        $role->delete();
+        $token = $this->apiToken();
+        $apiUrl = $this->apiUrl() . '/' . $id;
 
-        return redirect()->route('seguridad.roles.index')->with('success', 'Rol Eliminado Correctamente.');
+        try {
+            $response = Http::withToken($token)->delete($apiUrl);
+            if ($response->successful()) {
+                return redirect()->route('seguridad.roles.index')->with('success', 'Rol eliminado correctamente.');
+            } else {
+                return redirect()->route('seguridad.roles.index')->with('error', 'Error al eliminar el rol desde la API.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('seguridad.roles.index')->with('error', 'Error de conexión con la API.');
+        }
     }
 }

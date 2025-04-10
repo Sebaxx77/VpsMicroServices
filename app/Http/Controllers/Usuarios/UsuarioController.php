@@ -26,85 +26,14 @@ class UsuarioController extends Controller
     }
 
     /**
-     * Mapea un array de items a una colección de objetos.
-     */
-    protected function arrayToObjectRecursive($data)
-    {
-        if (is_array($data)) {
-            return (object) array_map([$this, 'arrayToObjectRecursive'], $data);
-        }
-        return $data;
-    }
-    /**
- * Mapea un array de items a una colección de objetos (recursivo).
- */
-    protected function mapToCollection($items)
-    {
-        return collect($items)->map(function ($item) {
-            return $this->arrayToObjectRecursive($item);
-        });
-    }
-
-    /**
-     * Reconstruye un paginador a partir de la respuesta de la API.
-     *
-     * Se usa para que la vista trabaje con el paginador
-     * y puedas seguir llamando a $usuarios->links() sin inconveniente.
-     */
-    protected function buildPaginator(array $paginatedData)
-    {
-        // Se asume que la API devuelve una estructura similar a la del paginador de Laravel:
-        // ['data' => [...], 'total' => int, 'per_page' => int, 'current_page' => int, ...]
-        $items = $this->mapToCollection($paginatedData['data']);
-        return new LengthAwarePaginator(
-            $items,
-            $paginatedData['total'],
-            $paginatedData['per_page'],
-            $paginatedData['current_page'],
-            [
-                'path' => request()->url(),
-                'query' => request()->query(),
-            ]
-        );
-    }
-
-    /**
      * Muestra la lista de usuarios junto con sus roles, permisos y operaciones,
      * consumiendo la API protegida con Sanctum.
      */
-    public function index(Request $request)
+    public function index()
     {
-        $token = $this->apiToken();
-        
-        // Captura 'search' y 'page'
-        $params = $request->only(['search', 'page']);
-        
-        // Si 'search' está vacío, lo removemos para que la API devuelva todos los registros.
-        if(empty($params['search'])) {
-            unset($params['search']);
-        }
-
-        $response = Http::withToken($token)->get($this->apiUrl(), $params);
-
-        if ($response->successful()) {
-            $data = $response->json();
-            // Reconstrucción del paginador
-            $usuarios = isset($data['usuarios']['data'])
-                ? $this->buildPaginator($data['usuarios'])
-                : collect([]);
-                
-            // Convertir roles, permisos y operaciones a colecciones de objetos
-            $roles       = isset($data['roles']) ? $this->mapToCollection($data['roles']) : collect();
-            $permissions = isset($data['permissions']) ? $this->mapToCollection($data['permissions']) : collect();
-            $operaciones = isset($data['operaciones']) ? $this->mapToCollection($data['operaciones']) : collect();
-        } else {
-            $usuarios = collect();
-            $roles = collect();
-            $permissions = collect();
-            $operaciones = collect();
-        }
-
-        return view('usuarios.index', compact('usuarios', 'roles', 'permissions', 'operaciones'));
+        $apiUrl = $this->apiUrl(); // o la ruta que estés usando
+        $apiToken = $this->apiToken();
+        return view('usuarios.index', compact('apiUrl', 'apiToken'));
     }
 
     /**
@@ -219,8 +148,7 @@ class UsuarioController extends Controller
     {
         $token = $this->apiToken();
 
-        $response = Http::withToken($token)
-            ->delete($this->apiUrl("/{$id}"));
+        $response = Http::withToken($token)->delete($this->apiUrl("/{$id}"));
 
         if ($response->successful()) {
             return redirect()->route('usuarios.index')

@@ -4,59 +4,131 @@ namespace App\Http\Controllers\Seguridad;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Spatie\Permission\Models\Permission;
+use Illuminate\Support\Facades\Http;
 
 class PermissionController extends Controller
 {
+    protected function apiUrl($endpoint = '/api/permisos')
+    {
+        return config('services.api_vps.url') . $endpoint;
+    }
+
+    /**
+     * Obtiene el token API almacenado en sesión.
+     */
+    protected function apiToken()
+    {
+        return session('api_token');
+    }
+
+    /**
+     * Mapea un array de items a una colección de objetos (recursivo).
+     */
+    protected function arrayToObjectRecursive($data)
+    {
+        if (is_array($data)) {
+            return (object) array_map([$this, 'arrayToObjectRecursive'], $data);
+        }
+        return $data;
+    }
+    /**
+     * Mapea un array de items a una colección de objetos.
+     */
+    protected function mapToCollection($items)
+    {
+        return collect($items)->map(function ($item) {
+            return $this->arrayToObjectRecursive($item);
+        });
+    }
+
     public function index()
     {
-        //Funcion para listar o mostrar todos los permisos
-        $permissions = Permission::all();
-        return view('seguridad.permisos.index', compact('permissions'));
+        $token = $this->apiToken();
+        try {
+            $response = Http::withToken($token)->get($this->apiUrl());
+            if ($response->successful()) {
+                $permissions = $this->mapToCollection($response->json());
+                return view('seguridad.permisos.index', compact('permissions'));
+            } else {
+                return redirect()->route('seguridad.permisos.index')->with('error', 'Error al obtener los permisos desde la API.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('seguridad.permisos.index')->with('error', 'Error de conexión con la API.');
+        }
     }
+
     public function create()
     {
-        //Función para mostrar el fomulario de creación de un nuevo permiso
         return view('seguridad.permisos.create');
     }
+
     public function store(Request $request)
     {
-        //Función para almacenar un nuevo permiso
-        $request->validate([
-            'name' => 'required|unique:permissions,name'
-        ]);
-        //validar
-
-        Permission::create(['name' => $request->name]);
-
-        return redirect()->route('seguridad.permisos.index')
-            ->with('success', 'Permiso creado correctamente.');
+        $token = $this->apiToken();
+        try {
+            $response = Http::withToken($token)->post($this->apiUrl(), $request->all());
+            if ($response->successful()) {
+                return redirect()->route('seguridad.permisos.index')
+                    ->with('success', 'Permiso creado correctamente.');
+            } else {
+                $errors = $response->json()['errors'] ?? ['Error al crear el permiso.'];
+                return redirect()->back()->withErrors($errors)->withInput();
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('seguridad.permisos.index')->with('error', 'Error de conexión con la API.');
+        }
     }
+
     public function edit($id)
     {
-        //Función para mostrar el formulario de editar un permiso
-        $permission = Permission::findOrFail($id);
-        return view('seguridad.permisos.edit', compact('permission'));
+        $token = $this->apiToken();
+        $apiUrl = $this->apiUrl() . '/' . $id;
+        
+        try {
+            $response = Http::withToken($token)->get($apiUrl);
+            if ($response->successful()) {
+                $permission = $this->arrayToObjectRecursive($response->json());
+                return view('seguridad.permisos.edit', compact('permission'));
+            } else {
+                return redirect()->route('seguridad.permisos.index')->with('error', 'Error al obtener el permiso desde la API.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('seguridad.permisos.index')->with('error', 'Error de conexión con la API.');
+        }
     }
+
     public function update(Request $request, $id)
     {
-        //Función para actualizar el permiso
-        $permission = Permission::findOrFail($id);
-        $request->validate([
-            'name' => 'required|unique:roles,name,' . $permission->id
-        ]);
+        $token = $this->apiToken();
+        $apiUrl = $this->apiUrl() . '/' . $id;
 
-        $permission->name = $request->name;
-        $permission->save();
-
-        return redirect()->route('seguridad.permisos.index')->with('Permiso actualizado correctamente');
+        try {
+            $response = Http::withToken($token)->put($apiUrl, $request->all());
+            if ($response->successful()) {
+                return redirect()->route('seguridad.permisos.index')->with('success', 'Permiso actualizado correctamente.');
+            } else {
+                $errors = $response->json()['errors'] ?? ['Error al actualizar el permiso.'];
+                return redirect()->back()->withErrors($errors)->withInput();
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('seguridad.permisos.index')->with('error', 'Error de conexión con la API.');
+        }
     }
+
     public function destroy($id)
     {
-        //Función para eliminar un permiso
-        $permission = Permission::FindOrFail($id);
-        $permission->delete();
+        $token = $this->apiToken();
+        $apiUrl = $this->apiUrl() . '/' . $id;
 
-        return redirect()->route('seguridad.permisos.index')->with('Permiso eliminado correctamente.');
+        try {
+            $response = Http::withToken($token)->delete($apiUrl);
+            if ($response->successful()) {
+                return redirect()->route('seguridad.permisos.index')->with('success', 'Permiso eliminado correctamente.');
+            } else {
+                return redirect()->route('seguridad.permisos.index')->with('error', 'Error al eliminar el permiso desde la API.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('seguridad.permisos.index')->with('error', 'Error de conexión con la API.');
+        }
     }
 }
