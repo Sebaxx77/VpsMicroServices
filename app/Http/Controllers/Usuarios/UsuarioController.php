@@ -12,9 +12,10 @@ class UsuarioController extends Controller
     /**
      * Obtiene la URL base de la API desde la configuración.
      */
-    protected function apiUrl($endpoint = '/api/usuarios')
+    protected function apiUrl($endpoint = '')
     {
-        return config('services.api_vps.url') . $endpoint;
+        $base = '/api/usuarios';
+        return rtrim(config('services.api_vps.url'), '/') . $base . $endpoint;
     }
 
     /**
@@ -42,45 +43,11 @@ class UsuarioController extends Controller
      */
     public function create()
     {
-        $token = $this->apiToken();
+        $apiToken = $this->apiToken();
+        $apiUrl = $this->apiUrl('/create-data');
+        $submitUrl = $this->apiUrl();
 
-        $response = Http::withToken($token)->get($this->apiUrl());
-        if ($response->successful()) {
-            $data = $response->json();
-            $roles       = isset($data['roles']) ? $this->mapToCollection($data['roles']) : collect();
-            $operaciones = isset($data['operaciones']) ? $this->mapToCollection($data['operaciones']) : collect();
-        } else {
-            $roles = collect();
-            $operaciones = collect();
-        }
-
-        return view('usuarios.create', compact('roles', 'operaciones'));
-    }
-
-    /**
-     * Almacena el nuevo usuario mediante un POST a la API.
-     */
-    public function store(Request $request)
-    {
-        $token = $this->apiToken();
-
-        // Validación temprana en la UI
-        $data = $request->validate([
-            'name'         => 'required|string|max:255',
-            'email'        => 'required|email',
-            'password'     => 'required|string|min:6|confirmed',
-            'role'         => 'required|string',
-            'operacion_id' => 'required|integer',
-        ]);
-
-        $response = Http::withToken($token)->post($this->apiUrl(), $data);
-
-        if ($response->successful()) {
-            return redirect()->route('usuarios.index')
-                ->with('success', 'Usuario creado exitosamente.');
-        } else {
-            return redirect()->back()->withErrors('Error al crear el usuario.');
-        }
+        return view('usuarios.create', compact('apiUrl', 'apiToken', 'submitUrl'));
     }
 
     /**
@@ -89,72 +56,10 @@ class UsuarioController extends Controller
      */
     public function edit($id)
     {
-        $token = $this->apiToken();
-        $apiUrl = $this->apiUrl() . '/' . $id; // Concatenamos el / y el $id a la URL base
+        $apiToken = $this->apiToken();
+        $apiUrl = $this->apiUrl("/edit-data/{$id}"); // para obtener los datos del usuario
+        $submitUrl = $this->apiUrl("/$id"); // para hacer PUT a /usuarios/{id}
 
-    try {
-        // Obtener los datos del usuario específico, roles y operaciones desde la API
-        $userResponse = Http::withToken($token)->get($apiUrl);
-
-            if ($userResponse->successful()) {
-                $data = $userResponse->json();
-                $usuario = $this->mapToCollection([$data['usuario']])->first(); // Convertimos el array del usuario a una Collection y obtenemos el primer (y único) elemento
-                $roles = $this->mapToCollection($data['roles'] ?? []);
-                $operaciones = $this->mapToCollection($data['operaciones'] ?? []);
-
-                return view('usuarios.edit', compact('usuario', 'roles', 'operaciones'));
-            } else {
-                // Manejar el error si no se encuentra el usuario
-                return redirect()->route('usuarios.index')->with('error', 'No se encontraron los datos del usuario para editar.');
-            }
-
-        } catch (\Exception $e) {
-            // Manejar errores de conexión u otros errores
-            return redirect()->route('usuarios.index')->with('error', 'Ocurrió un error al cargar la página de edición.');
-        }
-    }
-
-    /**
-     * Actualiza un usuario mediante una petición PUT a la API.
-     */
-    public function update(Request $request, $id)
-    {
-        $token = $this->apiToken();
-        
-        // Validación de datos
-        $data = $request->validate([
-            'name'         => 'required|string|max:255',
-            'email'        => 'required|email',
-            'operacion_id' => 'required|integer',
-            'role'         => 'sometimes|required|string',
-            // Puedes agregar validación adicional según necesidades.
-        ]);
-
-        $response = Http::withToken($token)
-            ->put($this->apiUrl("/{$id}"), $data);
-
-        if ($response->successful()) {
-            return redirect()->route('usuarios.index')
-                ->with('success', 'Usuario actualizado exitosamente.');
-        } else {
-            return redirect()->back()->withErrors('Error al actualizar el usuario.');
-        }
-    }
-
-    /**
-     * Elimina un usuario mediante una petición DELETE a la API.
-     */
-    public function destroy($id)
-    {
-        $token = $this->apiToken();
-
-        $response = Http::withToken($token)->delete($this->apiUrl("/{$id}"));
-
-        if ($response->successful()) {
-            return redirect()->route('usuarios.index')
-                ->with('success', 'Usuario eliminado exitosamente.');
-        } else {
-            return redirect()->back()->withErrors('Error al eliminar el usuario.');
-        }
+        return view('usuarios.create', compact('apiUrl', 'apiToken', 'submitUrl', 'id'));
     }
 }
