@@ -176,3 +176,103 @@ window.initDataTable = function({ selector, apiUrl, apiToken = null, columns}) {
         }
     });
 }
+// Eventos para el perfil de usuario y autenticación 2FA
+
+// Función para cargar datos del perfil de usuario
+window.loadProfile = function () {
+    const spinner = document.getElementById('profile-spinner');
+    spinner.classList.remove('hidden');
+
+    fetch(`${window.apiBaseUrl}/show`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${window.apiToken}`
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.name && data.email) {
+            document.getElementById('name').value = data.name;
+            document.getElementById('email').value = data.email;
+        } else {
+            Swal.fire('Error', 'No se pudieron cargar los datos del perfil.', 'error');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        Swal.fire('Error', 'Hubo un problema al cargar los datos del perfil.', 'error');
+    })
+    .finally(() => {
+        spinner.classList.add('hidden');
+    });
+};
+
+// Función para editar perfil de usuario
+window.updateProfile = function(event) {
+    event.preventDefault();
+
+    Swal.fire({
+        title: '¿Guardar cambios?',
+        text: "Estás a punto de actualizar tu perfil.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, guardar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+
+            fetch(`${window.apiBaseUrl}/update`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${window.apiToken}`
+                },
+                body: JSON.stringify({ name, email })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success || data.message === 'Perfil actualizado.') {
+                    Swal.fire('¡Actualizado!', 'Tu perfil fue modificado.', 'success').then(() => {
+                        location.reload(); // Recarga la página después de confirmar
+                    });
+                } else {
+                    Swal.fire('Error', data.message || 'No se pudo actualizar el perfil', 'error');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire('Error', 'Hubo un problema al actualizar el perfil', 'error');
+            });
+        }
+    });
+};
+
+// Función para manejar 2FA
+window.toggleTwoFactor = function(event) {
+    event.preventDefault();
+
+    fetch(`${window.apiBaseUrl}/2FA`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${window.apiToken}`
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success || data.message) {
+            Swal.fire('2FA', data.message || '2FA actualizado', 'success').then(() => {
+                location.reload();
+            });
+        } else {
+            Swal.fire('Error', 'Error al actualizar la 2FA', 'error');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        Swal.fire('Error', 'Hubo un problema al cambiar 2FA', 'error');
+    });
+};

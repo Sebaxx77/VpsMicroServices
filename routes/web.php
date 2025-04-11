@@ -7,11 +7,11 @@ use App\Http\Controllers\CorreosNotificables\CorreosNotificables;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Operaciones\OperacionController;
 use App\Http\Controllers\ParquesIndustriales\ParqueIndustrialController;
+use App\Http\Controllers\Perfil\PerfilController;
 use App\Http\Controllers\Seguridad\PermissionController;
 use App\Http\Controllers\Seguridad\RoleController;
 use App\Http\Controllers\Usuarios\UsuarioController;
 use Illuminate\Support\Facades\Route;
-
 
 /*
 |--------------------------------------------------------------------------
@@ -31,6 +31,9 @@ Route::get('/', function () {
 Route::get('/login', [ApiController::class, 'showLoginForm'])->name('login');
 Route::get('/forgot-password', [ApiController::class, 'showForgotPasswordForm'])->name('password.request');
 Route::get('/reset-password/{token}', [ApiController::class, 'showResetPasswordForm'])->name('password.reset');
+
+// Ruta Perfil del usuario
+Route::get('/perfil', [PerfilController::class, 'profileManage'])->name('profile.manage');
 
 // Rutas para enviar las peticiones de autenticación al API
 Route::post('/login', [ApiController::class, 'login']);

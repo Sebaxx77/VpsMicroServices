@@ -10,31 +10,31 @@
         @empty(session('api_token'))
             <h2 class="mb-2">Menú de Opciones</h2>
             <li>
-                <a href="{{ route('bienvenido') }}" class="block p-2 hover:bg-gray-700">Inicio</a>
+                <a href="{{ route('bienvenido') }}" class="block p-2 text-blue-400 hover:text-white hover:bg-blue-600 transition-colors">Inicio</a>
             </li>
             <li>
-                <a href="{{ route('login') }}" class="block p-2 hover:bg-gray-700">Iniciar Sesión</a>
+                <a href="{{ route('login') }}" class="block p-2 text-blue-400 hover:text-white hover:bg-blue-600 transition-colors">Iniciar Sesión</a>
             </li>
             <hr class="my-2 border-gray-600">
             <h2 class="mb-2">Agendamientos</h2>
             <li>
-                <a href="{{ route('login') }}" class="block p-2 hover:bg-gray-700">Agendar Visita</a>
+                <a href="{{ route('login') }}" class="block p-2 text-blue-400 hover:text-white hover:bg-blue-600 transition-colors">Agendar Visita</a>
             </li>
             <li>
-                <a href="{{ route('agendamiento.formato-descarga.index') }}" class="block p-2 hover:bg-gray-700">Agendar Descarga</a>
+                <a href="{{ route('agendamiento.formato-descarga.index') }}" class="block p-2 text-blue-400 hover:text-white hover:bg-blue-600 transition-colors">Agendar Descarga</a>
             </li>
         @else
             <h2 class="mb-2">Menú de Opciones</h2>
             <li>
-                <a href="{{ route('dashboard') }}" class="block p-2 hover:bg-gray-700">Panel de Control</a>
+                <a href="{{ route('dashboard') }}" class="block p-2 text-blue-400 hover:text-white hover:bg-blue-600 transition-colors">Panel de Control</a>
             </li>
             <li>
-                <a href="{{ route('profile.show') }}" class="block p-2 hover:bg-gray-700">Perfil</a>
+                <a href="{{ route('profile.manage') }}" class="block p-2 text-blue-400 hover:text-white hover:bg-blue-600 transition-colors">Perfil</a>
             </li>
             <li>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" class="w-full text-left block p-2 hover:bg-gray-700">Cerrar Sesión</button>
+                    <button type="submit" class="w-full text-left block p-2 text-blue-400 hover:text-white hover:bg-blue-600 transition-colors">Cerrar Sesión</button>
                 </form>
             </li>
             <hr class="my-2 border-gray-600">
@@ -42,42 +42,42 @@
             @if(isset($user['role']) && $user['role'] === 'Administrador')
                 <h2 class="mb-2">Opciones Administrador</h2>
                 <li>
-                    <a href="{{ route('usuarios.index') }}" class="block p-2 hover:bg-gray-700">Usuarios</a>
+                    <a href="{{ route('usuarios.index') }}" class="block p-2 text-blue-400 hover:text-white hover:bg-blue-600 transition-colors">Usuarios</a>
                 </li>
                 <li>
-                    <a href="{{ route('parques-industriales.index') }}" class="block p-2 hover:bg-gray-700">Parques Industriales</a>
+                    <a href="{{ route('parques-industriales.index') }}" class="block p-2 text-blue-400 hover:text-white hover:bg-blue-600 transition-colors">Parques Industriales</a>
                 </li>
                 <li>
-                    <a href="{{ route('correos-notificables.index') }}" class="block p-2 hover:bg-gray-700">Correos Notificables</a>
+                    <a href="{{ route('correos-notificables.index') }}" class="block p-2 text-blue-400 hover:text-white hover:bg-blue-600 transition-colors">Correos Notificables</a>
                 </li>
                 <li>
-                    <a href="{{ route('operaciones.index') }}" class="block p-2 hover:bg-gray-700">Operaciones</a>
+                    <a href="{{ route('operaciones.index') }}" class="block p-2 text-blue-400 hover:text-white hover:bg-blue-600 transition-colors">Operaciones</a>
                 </li>
                 <li>
-                    <a href="{{ route('seguridad.roles.index') }}" class="block p-2 hover:bg-gray-700">Roles</a>
+                    <a href="{{ route('seguridad.roles.index') }}" class="block p-2 text-blue-400 hover:text-white hover:bg-blue-600 transition-colors">Roles</a>
                 </li>
                 <li>
-                    <a href="{{ route('seguridad.permisos.index') }}" class="block p-2 hover:bg-gray-700">Permisos</a>
+                    <a href="{{ route('seguridad.permisos.index') }}" class="block p-2 text-blue-400 hover:text-white hover:bg-blue-600 transition-colors">Permisos</a>
                 </li>
             @endif
 
             @if(isset($user['role']) && $user['role'] === 'Autorizador Agendamientos')
                 <h2 class="mb-2">Opciones Autorizador</h2>
                 <li>
-                    <a href="{{ route('solicitudes.gestion') }}" class="block p-2 hover:bg-gray-700">Gestión Solicitudes</a>
+                    <a href="{{ route('solicitudes.gestion') }}" class="block p-2 text-blue-400 hover:text-white hover:bg-blue-600 transition-colors">Gestión Solicitudes</a>
                 </li>
                 <li>
-                    <a href="{{ route('solicitudes.pendientes') }}" class="block p-2 hover:bg-gray-700">Solicitudes Pendientes</a>
+                    <a href="{{ route('solicitudes.pendientes') }}" class="block p-2 text-blue-400 hover:text-white hover:bg-blue-600 transition-colors">Solicitudes Pendientes</a>
                 </li>
             @endif
 
             @if(isset($user['role']) && $user['role'] === 'Supervisor Agendamientos')
                 <h2 class="mb-2">Opciones Supervisor</h2>
                 <li>
-                    <a href="{{ route('agendamientos.descarga.index') }}" class="block p-2 hover:bg-gray-700">Agendamientos Descarga</a>
+                    <a href="{{ route('agendamientos.descarga.index') }}" class="block p-2 text-blue-400 hover:text-white hover:bg-blue-600 transition-colors">Agendamientos Descarga</a>
                 </li>
                 <li>
-                    <a href="{{ route('agendamientos.visita.index') }}" class="block p-2 hover:bg-gray-700">Agendamientos Visita</a>
+                    <a href="{{ route('agendamientos.visita.index') }}" class="block p-2 text-blue-400 hover:text-white hover:bg-blue-600 transition-colors">Agendamientos Visita</a>
                 </li>
             @endif
         @endempty

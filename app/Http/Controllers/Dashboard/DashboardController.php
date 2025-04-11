@@ -13,7 +13,7 @@ class DashboardController extends Controller
         $token = session('api_token');
 
         if (!$token) {
-            return redirect()->route('login')->withErrors(['email' => 'Sesión inválida.']);
+            return redirect()->route('login')->withErrors(['email' => 'Sesión inválida, porfavor inicie sesión nuevamente.']);
         }
 
         $response = Http::withToken($token)->get(config('services.api_vps.url') . '/api/dashboard');
